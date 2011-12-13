@@ -2,25 +2,36 @@ import cherrypy
 import webbrowser
 import json
 from jinja2 import Template
+import re
 
 class TTProgram(object):
     name =''
     modules = []
     template = """
-<div class="programheader" id="programname">{{name}}</div>
+<div class="edit programheader" id="programname">{{name}}</div>
 <div class="programbody">
 {% for m in modules %}
   {% set moduleindex = loop.index %}
   <div class="moduleheader">
     <a class="modify" href="/modify_program?removemodule={{moduleindex}}">[X]</a>
-    <div class="edit" id="modulename_{{moduleindex}}">{{m.name}}</div>
+    <div class="edit" id="module_{{moduleindex}}_name">{{m.name}}</div>
     <a class="modify" href="/modify_program?addmodule={{moduleindex}}">[+]</a>
   </div>
   <div class="modulebody">
     {% for s in m.segments %}
-      {% set segment_index = loop.index %}
-      <div class="edit" id="module_{{moduleindex}}-segment_{{segmentindex}}_temperature">{{s.temperature}}</div> + / -
-      <div class="edit" id="module_{{moduleindex}}-segment_{{segmentindex}}_duration">{{s.duration}}</div> + / - 
+      {% set segmentindex = loop.index %}
+      <div class="edit" id="module_{{moduleindex}}_segment_{{segmentindex}}_temperature">{{s.temperature}}</div>
+      <div class="increment" id="module_{{moduleindex}}_segment_{{segmentindex}}_temperatureincrement">
+         <div id="increment_value">{{s.temperature_increment}}</div>
+         <a name="up">+</a>
+         <a name="down">-</a>
+      </div>
+      <div class="edit" id="module_{{moduleindex}}_segment_{{segmentindex}}_duration">{{s.duration}}</div>
+      <div class="increment" id="module_{{moduleindex}}_segment_{{segmentindex}}_durationincrement">
+         <div id="increment_value">{{s.duration_increment}}</div>
+         <a name="up">+</a>
+         <a name="down">-</a>
+      </div>
     {% endfor %} 
     <a class="modify" href="/modify_program?addsegment={{moduleindex}}">+</a>
     <div class="edit" id="cycles_{{moduleindex}}">{{m.cycles}}</div>
@@ -106,7 +117,17 @@ class ThermotypGUI(object):
     @cherrypy.expose
     def update_program(self, id, value):
         cherrypy.response.headers['Content-Type'] = 'text/html'
-        #here is where we would do validation based on ID
+        
+        if (id == "programname"):
+            self.program.name = value
+        elif (re.match(id, "module_(\d)")):
+            module_index = re.match(id, "module_(\d)").group().split("_")[1]
+            module = self.program.modules[module_index]
+            
+            therest = id.split("_")[2:]
+            if module.__dict__.has_key(therest[0]):
+                module.__dict__[therest[0]] = value
+        
         return value 
 
     #changing the actual structure of the program
@@ -144,15 +165,36 @@ class ThermotypGUI(object):
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 <script type="text/javascript" src="http://www.appelsiini.net/download/jquery.jeditable.mini.js"></script>
 <script>
+ function createIterator(obj){
+    alert($(obj).attr("id"));
+ 
+ }
+
 
  $(document).ready(function() {
     $('.edit').editable('/update_program');
     $('.modify').click(function(ev) { 
       target = (ev.originalTarget)?ev.originalTarget:ev.srcElement; 
       $.get(target, function () { $('#program').load('/render') })
-      alert(target);
       return false; 
-      })
+      });
+      
+    $('.increment > a').each(function() {
+      id = $(this).parent().attr('id');
+      value_div = $(this).parent().find("#increment_value");
+      value = parseInt(value_div.html());
+      if ($(this).attr('name') == "up") {
+        $(this).attr("href", "/update_program?id="+id+"&value=+1");
+      }
+      if ($(this).attr('name') == "down") {
+        $(this).attr("href", "/update_program?id="+id+"&value=-1");
+      }
+      $(this).click(function(ev) {
+        ev.preventDefault();
+        target = (ev.originalTarget)?ev.originalTarget:ev.srcElement;
+        $(target).parent().find("#increment_value").load($(target).attr("href"));
+      });
+    });
  });
 
  function rerender() {
