@@ -207,6 +207,7 @@ class ThermotypGUI(object):
 <BODY>
 <FORM name="program" id="program">""" + self.program.render() + """
 </FORM>
+<a href="/csv">Download as CSV</a>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 <script type="text/javascript" src="http://www.appelsiini.net/download/jquery.jeditable.mini.js"></script>
 <script>
