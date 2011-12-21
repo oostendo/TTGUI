@@ -212,9 +212,9 @@ class ThermotypGUI(object):
 <script type="text/javascript" src="http://www.appelsiini.net/download/jquery.jeditable.mini.js"></script>
 <script>
 
-#this function changes the sparse template into something with actual actions
-#the three types are "edit" (editable field), "modify" (program structure change)
-#and "increment" (a +/- modification)
+//this function changes the sparse template into something with actual actions
+//the three types are "edit" (editable field), "modify" (program structure change)
+//and "increment" (a +/- modification)
 function activate_widgets() {
     $('.edit').editable('/update_program');
     $('.modify').click(function(ev) { 
