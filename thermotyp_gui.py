@@ -153,7 +153,8 @@ class ThermotypGUI(object):
                 seg = module.segments[segment_index].__dict__
             
                 if seg.has_key(prop):
-                    if value[0] == "+":
+                    print "before:" + str(seg[prop])
+                    if value[0] == " ":
                         seg[prop] = int(seg[prop]) + int(value[1:])
                         value = seg[prop]
                     elif value[0] == "-":
@@ -161,6 +162,7 @@ class ThermotypGUI(object):
                         value = seg[prop]
                     else:
                         seg[prop] = value
+                    print "after:" + str(seg[prop])
         
         return str(value)
 
@@ -253,9 +255,9 @@ def open_page():
     webbrowser.open("http://127.0.0.1:8080/")
 
 config = {}
-cherrypy.engine.subscribe('start', open_page)
-cherrypy.tree.mount(ThermotypGUI(), '/', config=config)
-cherrypy.engine.start()
-#cherrypy.quickstart(ThermotypGUI())
+#cherrypy.engine.subscribe('start', open_page)
+#cherrypy.tree.mount(ThermotypGUI(), '/', config=config)
+#cherrypy.engine.start()
+cherrypy.quickstart(ThermotypGUI())
 #uncomment this for debugging
 
