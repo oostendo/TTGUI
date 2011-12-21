@@ -25,6 +25,9 @@ class TTProgram(object):
   <div class="modulebody">
     {% for s in m.segments %}
       {% set segmentindex = loop.index %}
+      {% if segmentindex > 1 %}
+          <a class="modify" href="/modify_program?removesegment={{moduleindex}},{{segmentindex}}">x</a>
+      {% endif %}
       <div class="edit" id="module_{{moduleindex}}_segment_{{segmentindex}}_temperature">{{s.temperature}}</div>
       <div class="increment" id="module_{{moduleindex}}_segment_{{segmentindex}}_temperatureincrement">
          <div id="increment_value">{{s.temperatureincrement}}</div>
@@ -171,15 +174,20 @@ class ThermotypGUI(object):
     def modify_program(self, **vars):
         cherrypy.response.headers['Content-Type'] = 'text/html'
         for k in vars.keys():
-            index = int(vars[k]) - 1
             if k == "removemodule":
+                index = int(vars[k]) - 1
                 if len(self.program.modules) == 1:
                     return "false"
                 self.program.modules.pop(index)
             if k == "addmodule":
+                index = int(vars[k]) - 1
                 self.program.modules.insert(index + 1, TTModule())
             if k == "addsegment":
+                index = int(vars[k]) - 1
                 self.program.modules[index].segments.append(TTSegment())
+            if k == "removesegment":
+                moduleindex, segmentindex = vars[k].split(",")
+                self.program.modules[int(moduleindex)-1].segments.pop(int(segmentindex) - 1)
                 
         return "true"    
 
@@ -218,13 +226,11 @@ class ThermotypGUI(object):
 //the three types are "edit" (editable field), "modify" (program structure change)
 //and "increment" (a +/- modification)
 function activate_widgets() {
-    alert('Hi');
     $('.edit').editable('/update_program');
     $('.modify').click(function(ev) { 
       ev.preventDefault();
-      target = (ev.originalTarget)?ev.originalTarget:ev.srcElement; 
+      target = (ev.target)?ev.target:ev.srcElement; 
       $.get(target, function () { $('#program').load('/render'); })
-      activate_widgets();
       return false; 
       });
       
@@ -240,7 +246,7 @@ function activate_widgets() {
       }
       $(this).click(function(ev) {
         ev.preventDefault();
-        target = (ev.originalTarget)?ev.originalTarget:ev.srcElement;
+        target = (ev.target)?ev.target:ev.srcElement;
         $(target).parent().find("#increment_value").load($(target).attr("href"));
       });
     });
