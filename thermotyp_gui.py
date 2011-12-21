@@ -218,11 +218,13 @@ class ThermotypGUI(object):
 //the three types are "edit" (editable field), "modify" (program structure change)
 //and "increment" (a +/- modification)
 function activate_widgets() {
+    alert('Hi');
     $('.edit').editable('/update_program');
     $('.modify').click(function(ev) { 
       ev.preventDefault();
       target = (ev.originalTarget)?ev.originalTarget:ev.srcElement; 
       $.get(target, function () { $('#program').load('/render'); })
+      activate_widgets();
       return false; 
       });
       
@@ -255,9 +257,9 @@ def open_page():
     webbrowser.open("http://127.0.0.1:8080/")
 
 config = {}
-#cherrypy.engine.subscribe('start', open_page)
-#cherrypy.tree.mount(ThermotypGUI(), '/', config=config)
-#cherrypy.engine.start()
-cherrypy.quickstart(ThermotypGUI())
+cherrypy.engine.subscribe('start', open_page)
+cherrypy.tree.mount(ThermotypGUI(), '/', config=config)
+cherrypy.engine.start()
+#cherrypy.quickstart(ThermotypGUI())
 #uncomment this for debugging
 
